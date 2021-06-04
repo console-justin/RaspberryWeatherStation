@@ -1,0 +1,160 @@
+import React, { useEffect, useContext, useState, useCallback } from "react";
+import Spinner from "~/components/Spinner";
+import { AppContext } from "~/AppContext";
+import styles from "./styles.css";
+import LocationName from "~/components/LocationName";
+import CurrentWeather from "~/components/CurrentWeather";
+import DailyChart from "~/components/weatherCharts/DailyChart";
+import HourlyChart from "~/components/weatherCharts/HourlyChart";
+
+const CURRENT_WEATHER_DATA_UPDATE_INTERVAL = 10 * 60 * 1000; // 10 minutes
+const HOURLY_WEATHER_DATA_UPDATE_INTERVAL = 60 * 60 * 1000; // Hourly
+const DAILY_WEATHER_DATA_UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // Daily
+
+function createWeatherUpdateInterval({
+  stateInterval, stateIntervalSetter,
+  cb, intervalTime, weatherApiKey,
+  mapGeo,
+}) {
+  if (stateInterval) {
+    clearInterval(stateInterval);
+    stateIntervalSetter(null);
+  }
+  if (weatherApiKey && mapGeo) {
+    const interval = setInterval(cb, intervalTime);
+    cb();
+    stateIntervalSetter(interval);
+  }
+}
+
+const WeatherInfo = () => {
+  const {
+    getWeatherApiKey, getReverseGeoApiKey,
+    reverseGeoApiKey, updateCurrentWeatherData,
+    updateHourlyWeatherData, updateDailyWeatherData,
+    mapGeo, weatherApiKey, currentWeatherDataErr,
+    currentWeatherDataErrMsg, darkMode, setSettingsMenuOpen,
+    currentWeatherData, updateSunriseSunset
+  } = useContext(AppContext);
+
+  const [
+    currentWeatherUpdateInterval,
+    setCurrentWeatherUpdateInterval,
+  ] = useState(null);
+  const [
+    hourlyWeatherUpdateInterval,
+    setHourlyWeatherUpdateInterval,
+  ] = useState(null);
+  const [dailyWeatherUpdateInterval, setDailyWeatherUpdateInterval] = useState(
+    null
+  );
+  const [err, setErr] = useState(null);
+
+  const hourlyWeatherUpdateCb = useCallback(() => {
+    updateSunriseSunset(mapGeo);
+    updateHourlyWeatherData(mapGeo).catch((err) => {
+      console.log("err", err);
+    });
+  }, [updateHourlyWeatherData, updateSunriseSunset, mapGeo]);
+
+  const dailyWeatherUpdateCb = useCallback(() => {
+    updateDailyWeatherData(mapGeo).catch((err) => {
+      console.log("err", err);
+    });
+  }, [updateDailyWeatherData, mapGeo]);
+
+  const currentWeatherUpdateCb = useCallback(() => {
+    updateCurrentWeatherData(mapGeo).catch((err) => {
+      console.log("err", err);
+    });
+  }, [updateCurrentWeatherData, mapGeo]);
+
+  useEffect(() => {
+    setErr(false);
+    if (!weatherApiKey) {
+      getWeatherApiKey().catch((err) => {
+        console.log("error getting weather api key:", err);
+        setErr(true);
+        setSettingsMenuOpen(true);
+      });
+    }
+    if (!reverseGeoApiKey) {
+      getReverseGeoApiKey().catch((err) => {
+        console.log("error getting reverse geo api key:", err);
+      });
+    }
+  }, [weatherApiKey, reverseGeoApiKey]);
+
+  useEffect(() => {
+    createWeatherUpdateInterval({
+      stateInterval: currentWeatherUpdateInterval,
+      stateIntervalSetter: setCurrentWeatherUpdateInterval,
+      cb: currentWeatherUpdateCb,
+      intervalTime: CURRENT_WEATHER_DATA_UPDATE_INTERVAL,
+      weatherApiKey,
+      mapGeo,
+    });
+    createWeatherUpdateInterval({
+      stateInterval: hourlyWeatherUpdateInterval,
+      stateIntervalSetter: setHourlyWeatherUpdateInterval,
+      cb: hourlyWeatherUpdateCb,
+      intervalTime: HOURLY_WEATHER_DATA_UPDATE_INTERVAL,
+      weatherApiKey,
+      mapGeo,
+    });
+    createWeatherUpdateInterval({
+      stateInterval: dailyWeatherUpdateInterval,
+      stateIntervalSetter: setDailyWeatherUpdateInterval,
+      cb: dailyWeatherUpdateCb,
+      intervalTime: DAILY_WEATHER_DATA_UPDATE_INTERVAL,
+      weatherApiKey,
+      mapGeo,
+    });
+    return () => {
+      clearInterval(currentWeatherUpdateInterval);
+      clearInterval(hourlyWeatherUpdateInterval);
+      clearInterval(dailyWeatherUpdateInterval);
+    };
+  }, [weatherApiKey, mapGeo]);
+
+  if (currentWeatherData) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.location}>
+          <LocationName />
+        </div>
+        <div>
+          <CurrentWeather />
+        </div>
+        <div className={styles.weatherChart}>
+          <HourlyChart />
+        </div>
+        <div className={styles.weatherChart}>
+          <DailyChart />
+        </div>
+      </div>
+    );
+  } else if (currentWeatherData || currentWeatherDataErr || err) {
+    return (
+      <div
+        className={`${styles.errContainer} ${
+          darkMode ? styles.dark : styles.light
+        }`}
+      >
+        <div>Could not retrieve weather data.</div>
+        <div>Weather API key valid?</div>
+        {currentWeatherDataErr ? (
+          <div className={styles.message}>{currentWeatherDataErrMsg}</div>
+        ) : null}
+      </div>
+    );
+  } else {
+    return (
+      <div className={styles.loadingContainer}>
+        <Spinner size={"20px"} color={darkMode ? "#f6f6f444" : "#3a393844"} />
+      </div>
+    );
+  }
+};
+
+export default WeatherInfo;

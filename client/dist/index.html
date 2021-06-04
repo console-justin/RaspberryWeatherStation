@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin="">
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Raspberry Weather Station</title>
+
+<link rel="stylesheet" href="/client/dist/styles.css">
+
+</head>
+<body>
+
+<div id="root" style="position: fixed;">
+</div>
+
+<script src="/bundle.min.js">
+</script>
+
+<div id="mybutton" style="position: fixed; bottom: 0; z-index: 100;" >
+    <button style= "background:linear-gradient(#2ba0d6, #0073a8); padding-right: 20px; padding-left: 20px; padding-bottom: 5px; padding-top: 5px; stroke: white; color:rgb(219, 219, 219); font-family:verdana;"><b>South Hills</b> Live Video</button>
+  </a>
+</div>
+
+<div id="myModal" class="modal">
+
+  <!-- inside modal -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+      <iframe 
+      width="95%" 
+      height="100%" 
+      src="https://www.youtube.com/embed/Ml6enWjVH2k" 
+      title="YouTube video player" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+      </iframe>
+  </div>
+
+</div>
+
+<style>
+  body {font-family: Arial, Helvetica, sans-serif;}
+  
+  /* Modal */
+  .modal {
+    display: none; /* Hidden */
+    position: fixed; /* in place */
+    z-index: 1; /* on top */
+    padding-top: 150px; /* Location */
+    left: 0;
+    top: 0;
+    width: 100%; /* width */
+    height: 100%; /* height */
+    overflow: auto; /* scroll if needed */
+    background-color: rgb(0,0,0); /* color */
+    background-color: rgba(0,0,0,0.4); /* Black with opacity */
+  }
+  
+  /* Modal Content */
+  .modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    height: 50%;
+  }
+  
+  /* Close Button */
+  .close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  </style>
+
+<script>
+  // modal
+  var modal = document.getElementById("myModal");
+  
+  // button that opens the modal
+  var mybutton = document.getElementById("mybutton");
+  
+  // <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+  
+  // click the button, open the modal 
+  mybutton.onclick = function() {
+    modal.style.display = "block";
+  }
+  
+  // click on <span> (x), close the modal
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+  
+  // click anywhere outside of the modal, close it
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+  </script>
+
+</body>
+</html>
